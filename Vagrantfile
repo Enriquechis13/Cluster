@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
     cluster.vm.box = "debian/bullseye64"
     cluster.vm.hostname = "cluster.sistema.test"
     cluster.vm.network "private_network", ip: "192.168.57.102"
-    cluster.vm.synced_folder "./cluster", "/home/vagrant/cluster"
+    #cluster.vm.synced_folder "./Cluster", "/home/vagrant/cluster"
 
     cluster.vm.provision "shell", inline: <<-SHELL
     sudo apt update
@@ -44,6 +44,17 @@ Vagrant.configure("2") do |config|
     #     console.log(`App listening on port ${port}`);
     # });
     node app.js
+    
+#ESTO ES PARA EL PM2 CONFIG
+#     module.exports = {
+#     apps: [{
+#         name: "cluster_app",
+#         script: "cluster_app.js",
+#         instances: 0,
+#         exec_mode: "cluster"
+#     }]
+# };
+
 
 
     SHELL
