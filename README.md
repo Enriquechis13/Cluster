@@ -166,6 +166,7 @@ pm2 start ecosystem.config.js
 ![Imagen cluster](img/Capturapm2config.png)
 
 4. **Comandos útiles de PM2**
+
 ```sh
 pm2 ls
 ```
@@ -179,7 +180,7 @@ pm2 logs
 ![Imagen cluster](img/Capturapm2logs.png)
 
 ```sh
-pm2 monitor
+pm2 monit
 ```
 
 ![Imagen cluster](img/Capturapm2moni.png)

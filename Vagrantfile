@@ -4,58 +4,69 @@ Vagrant.configure("2") do |config|
     cluster.vm.box = "debian/bullseye64"
     cluster.vm.hostname = "cluster.sistema.test"
     cluster.vm.network "private_network", ip: "192.168.57.102"
-    #cluster.vm.synced_folder "./Cluster", "/home/vagrant/cluster"
 
     cluster.vm.provision "shell", inline: <<-SHELL
-    sudo apt update
-    sudo apt install curl
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt install -y nodejs
-    sudo apt install -y npm
-    mkdir cluster
-    cd cluster
-    nano cluster_app.js
+    sudo apt update && sudo apt install -y nodejs npm
+
+    node -v && npm -v
+
+    mkdir -p /home/vagrant/cluster_app
+    cd /home/vagrant/cluster_app
+
     npm init -y
+
     npm install express
-    nano app.js
-    #aqui va el codigoconst express = require("express");
-    # const app = express();
-    # const port = 3000;
-    # const limit = 5000000000;
 
-    # app.get("/", (req, res) => {
-    #     res.send("Hello World!");
-    # });
+    sudo apt update && sudo apt install -y nodejs npm
 
-    # app.get("/api/:n", function (req, res) {
-    #     let n = parseInt(req.params.n);
-    #     let count = 0;
+    node -v && npm -v
 
-    #     if (n > limit) n = limit;
+    mkdir -p /home/vagrant/cluster_app
+    cd /home/vagrant/cluster_app
 
-    #     for (let i = 0; i <= n; i++) {
-    #         count += i;
-    #     }
+    npm init -y
 
-    #     res.send(`Final count is ${count}`);
-    # });
+    npm install express
 
-    # app.listen(port, () => {
-    #     console.log(`App listening on port ${port}`);
-    # });
-    node app.js
-    
-#ESTO ES PARA EL PM2 CONFIG
-#     module.exports = {
-#     apps: [{
-#         name: "cluster_app",
-#         script: "cluster_app.js",
-#         instances: 0,
-#         exec_mode: "cluster"
-#     }]
-# };
+    echo 'const express = require("express");
+    const cluster = require("cluster");
+    const os = require("os");
 
+    const totalCPUs = os.cpus().length;
+    const port = 3000;
 
+    if (cluster.isMaster) {
+        console.log(`Master ${process.pid} está corriendo`);
+        for (let i = 0; i < totalCPUs; i++) {
+            cluster.fork();
+        }
+        cluster.on("exit", (worker) => {
+            console.log(`Worker ${worker.process.pid} murió, creando otro...`);
+            cluster.fork();
+        });
+    } else {
+        const app = express();
+        app.get("/", (req, res) => {
+            res.send(`Hola desde Worker ${process.pid}`);
+        });
+        app.listen(port, "0.0.0.0", () => {
+            console.log(`Worker ${process.pid} escuchando en puerto ${port}`);
+        });
+    }' > cluster_app.js
+
+    echo 'module.exports = {
+        apps: [{
+            name: "cluster_app",
+            script: "cluster_app.js",
+            instances: 0,
+            exec_mode: "cluster"
+        }]
+    };' > ecosystem.config.js
+
+    npm install -g pm2
+    pm2 start ecosystem.config.js
+    pm2 save
+    pm2 startup systemd
 
     SHELL
   end
