@@ -213,3 +213,45 @@ loadtest http://192.168.57.102:3000 -n 1000 -c 100
 **Con Cluster**
 
 ![Imagen cluster](img/(concluster).png)
+
+## Respuesta a la Cuestión Final  
+
+En algunos casos concretos, la aplicación **sin clusterizar** puede obtener mejores resultados en las pruebas de carga debido a varios factores clave relacionados con la forma en que Node.js maneja los procesos y la concurrencia.  
+
+![Imagen cluster](img/CapturaCUESTIONFINAL1.PNG)
+
+![Imagen cluster](img/CapturaCUESTIONFINAL2.PNG)
+
+`La primera imagen ilustra los resultados de unas pruebas de carga sobre la aplicación sin clúster y la segunda sobre la aplicación clusterizada`
+
+1. **Overhead de Creación y Comunicación entre Workers**  
+
+Cuando se usa el módulo `cluster` en Node.js, el proceso maestro debe administrar la distribución de las solicitudes entre los workers. Esta coordinación introduce un **overhead adicional** en comparación con un único proceso que simplemente gestiona las solicitudes de forma secuencial.  
+
+- En cargas ligeras, este overhead puede generar una ligera pérdida de eficiencia, ya que el beneficio de la distribución de carga aún no compensa el costo de gestionar múltiples procesos.  
+- Si las solicitudes son muy simples y rápidas (como devolver una respuesta estática), la versión sin clúster puede responder más rápidamente sin necesidad de dividir la carga.  
+
+2. **Uso de Memoria y Cambio de Contexto**  
+
+Cada worker en un clúster es un **proceso independiente**, lo que significa que consume memoria adicional y requiere cambios de contexto en la CPU.  
+
+- Si la cantidad de memoria disponible es limitada, tener múltiples workers puede hacer que el sistema tenga que **gestionar más procesos**, lo que podría degradar el rendimiento.  
+- En cambio, un único proceso sin clúster consume menos memoria y puede ejecutarse de manera más fluida en situaciones donde los recursos son limitados.  
+
+3. **Estrategia de Balanceo de Carga** 
+
+Node.js distribuye las solicitudes entre los workers mediante **un algoritmo de balanceo de carga**. Dependiendo de cómo esté implementado, en ciertos casos puede generar cuellos de botella en la asignación de tareas.  
+
+- Si el balanceo de carga no está bien optimizado para la cantidad y tipo de solicitudes, algunos workers podrían estar **sobrecargados**, mientras que otros permanecen inactivos.  
+- En contraste, un único proceso maneja todas las solicitudes de forma directa, evitando posibles problemas de distribución ineficiente.  
+
+4. **Eficiencia en Tareas No Bloqueantes**  
+
+Si la aplicación está diseñada para ser altamente eficiente en la gestión de solicitudes **no bloqueantes**, el uso de clústeres puede no ser tan beneficioso.  
+
+- Node.js es naturalmente asíncrono y manejado por eventos, lo que significa que en una aplicación bien optimizada con `async/await`, Promises o `setImmediate`, un solo proceso puede manejar muchas solicitudes sin necesidad de múltiples workers.  
+- En cambio, si la aplicación tiene operaciones **bloqueantes** (como cálculos intensivos o procesamiento de archivos), entonces la versión con clúster se vuelve más eficiente.  
+
+### Conclusión**
+
+El uso de `cluster` mejora el rendimiento en aplicaciones con **alta carga de trabajo y tareas bloqueantes**, ya que distribuye la carga entre varios procesos. Sin embargo, en situaciones donde las solicitudes son ligeras, la sincronización entre workers y el overhead de administración pueden hacer que la versión sin clúster tenga un rendimiento **ligeramente mejor** en algunos escenarios.  
