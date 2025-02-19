@@ -224,6 +224,12 @@ En algunos casos concretos, la aplicación **sin clusterizar** puede obtener mej
 
 `La primera imagen ilustra los resultados de unas pruebas de carga sobre la aplicación sin clúster y la segunda sobre la aplicación clusterizada`
 
+### Observaciones Basadas en la Práctica Realizada  
+
+- **En las pruebas realizadas, se observó que la aplicación sin clúster mostró mejor rendimiento en cargas bajas**. Esto confirma la teoría de que el overhead de creación y gestión de workers puede ser perjudicial en ciertas situaciones.
+- **El uso de PM2 permitió una mejor gestión del clúster**, manteniendo la estabilidad de la aplicación sin intervención manual.
+- **Las pruebas con `loadtest` demostraron que la aplicación clusterizada tiene una mayor capacidad de manejo de múltiples peticiones simultáneas**, aunque en algunos casos la latencia aumentó debido a la administración de procesos.
+
 1. **Overhead de Creación y Comunicación entre Workers**  
 
 Cuando se usa el módulo `cluster` en Node.js, el proceso maestro debe administrar la distribución de las solicitudes entre los workers. Esta coordinación introduce un **overhead adicional** en comparación con un único proceso que simplemente gestiona las solicitudes de forma secuencial.  
@@ -238,7 +244,7 @@ Cada worker en un clúster es un **proceso independiente**, lo que significa que
 - Si la cantidad de memoria disponible es limitada, tener múltiples workers puede hacer que el sistema tenga que **gestionar más procesos**, lo que podría degradar el rendimiento.  
 - En cambio, un único proceso sin clúster consume menos memoria y puede ejecutarse de manera más fluida en situaciones donde los recursos son limitados.  
 
-3. **Estrategia de Balanceo de Carga** 
+3. **Estrategia de Balanceo de Carga**  
 
 Node.js distribuye las solicitudes entre los workers mediante **un algoritmo de balanceo de carga**. Dependiendo de cómo esté implementado, en ciertos casos puede generar cuellos de botella en la asignación de tareas.  
 
@@ -252,6 +258,7 @@ Si la aplicación está diseñada para ser altamente eficiente en la gestión de
 - Node.js es naturalmente asíncrono y manejado por eventos, lo que significa que en una aplicación bien optimizada con `async/await`, Promises o `setImmediate`, un solo proceso puede manejar muchas solicitudes sin necesidad de múltiples workers.  
 - En cambio, si la aplicación tiene operaciones **bloqueantes** (como cálculos intensivos o procesamiento de archivos), entonces la versión con clúster se vuelve más eficiente.  
 
-### Conclusión**
 
+### Conclusión 
 El uso de `cluster` mejora el rendimiento en aplicaciones con **alta carga de trabajo y tareas bloqueantes**, ya que distribuye la carga entre varios procesos. Sin embargo, en situaciones donde las solicitudes son ligeras, la sincronización entre workers y el overhead de administración pueden hacer que la versión sin clúster tenga un rendimiento **ligeramente mejor** en algunos escenarios.  
+
