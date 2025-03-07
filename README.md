@@ -193,6 +193,16 @@ pm2 stop cluster_app
 
 ## Pruebas de Carga con `loadtest`
 
+Para intalar loadtest y nodejs, actualizado:
+
+```bash
+sudo apt-get remove -y nodejs npm
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v  # Debería mostrar v16.x.x
+sudo npm install -g loadtest
+```
+
 1. **Instalar `loadtest`**  
    `loadtest` permite simular cargas de peticiones al servidor.
 
